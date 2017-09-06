@@ -1,0 +1,64 @@
+{
+	"connections": [
+	{
+		"server": {
+			"name" : "rizon",
+			"address": "irc.rizon.net",
+			"port": 6667
+		},
+		"info": {
+			"nickname": "ZBot",
+			"alt_nickname" : "ZBot_T",
+			"realname": "ZBot",
+			"username": "ZBot"
+		},
+		"nickserv": {
+			"enabled": false,
+			"password": ""
+		},
+		"channels": [
+			"#coderbus",
+			"#tgstation13"
+		]
+	}
+	],
+	"webhook": {
+		"enabled" : true,
+		"port": 8080,
+		"github": {
+			"secret": "",
+			"events": {
+				"pull_request": {
+					"actions": [
+						"opened",
+						"reopened",
+						"closed"
+					],
+					"channels": [
+						"#coderbus"
+					]
+				},
+				"issues": {
+					"actions": [
+						"opened",
+						"reopened",
+						"closed"
+					],
+					"channels": [
+						"#coderbus"
+					]
+
+				},
+				"push" : {
+					"channels": [
+						"#coderbus"
+					]
+				}
+			}
+		}
+	},
+	"webrequests" : {
+		"name" : "tgstation",
+		"owner" : "tgstation"
+	}
+}

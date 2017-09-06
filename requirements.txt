@@ -1,0 +1,3 @@
+twisted
+fuzzywuzzy[speedup]
+requests
