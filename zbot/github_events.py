@@ -48,7 +48,7 @@ class EventHandler:
 	def _pull_request_event(self):
 		pr_action = self.payload.get('action')
 		if pr_action not in self.this_event_dict.get('actions'):
-			return {'message' : None}
+			return None
 		pr_obj = self.payload.get('pull_request')
 		merging = pr_obj.get('merged')
 		pr_action_color = self._get_action_color(pr_action, merging)
@@ -72,26 +72,26 @@ class EventHandler:
 	def _push_event(self):
 		sender = self._get_sender()
 		branch = self.payload.get('ref').replace('refs/heads/', '')
+		diff = self.payload.get('compare')
 		if self.payload.get('deleted'):
-			return "{} 4deleted {}.".format(sender, branch)
+			return "{} 4deleted {}. {}".format(sender, branch, diff)
 		elif self.payload.get('created'):
-			url = self.payload.get('repository').get('html_url') + "/tree/{}".format(branch)
-			return "{} 3created {}. {}".format(sender, branch, url)
+			return "{} 3created {}. {}".format(sender, branch, diff)
 		
 		
 		size = len(self.payload.get('commits'))
 		
 		#the message
 		msg = "Push: "
-		msg += "{} {}pushed {} commit{} ".format(sender, '4force-' if self.payload.get('forced') else '', size, 's' if size > 1 else '')
+		msg += "{} 6{}pushed {} commit{} ".format(sender, '4force-' if self.payload.get('forced') else '', size, 's' if size > 1 else '')
 		msg += "to {}. ".format(branch)
-		msg += self.payload.get('compare')
+		msg += diff
 		return msg
 	
 	def _issue_event(self):
 		issue_action = self.payload.get('action')
 		if issue_action not in self.this_event_dict.get('actions'):
-			return {'message' : None}
+			return None
 		issue_obj = self.payload.get('issue')
 		issue_action_color = self._get_action_color(issue_action)
 		issue_title = issue_obj.get('title')
