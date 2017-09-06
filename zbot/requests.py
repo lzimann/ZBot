@@ -8,6 +8,7 @@ from fuzzywuzzy import process, fuzz
 """
 class APIRequests:
 	github_api_url = 'https://api.github.com/repos'
+	github_frontend_url = 'https://github.com'
 	file_pattern = re.compile('.*\/(.*)')
 	def __init__(self, config):
 		self.config = config
@@ -25,6 +26,16 @@ class APIRequests:
 			if file.get('type') == 'blob':
 				self.current_paths.append(file['path'])
 	
+	"""
+		Returns a URL to a commit if it exists
+	"""
+	def get_commit_url(self, sha):
+		api_url = '{gau}/{o}/{r}/commits/{commit}'.format(gau = self.github_api_url, o = self.owner, r = self.repo, commit = sha)
+		r = requests.get(api_url)
+		if r.status_code == 200:	#will 404 if it doesn't exist
+			frontend_url = '{feu}/{o}/{r}/commit/{commit}'.format(gau = self.github_frontend_url, o = self.owner, r = self.repo, commit = sha)
+			return frontend_url
+
 	"""
 		Returns a json tree of the default repo
 	"""
