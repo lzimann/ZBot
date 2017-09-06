@@ -13,7 +13,8 @@ class ZBot(irc.IRCClient):
 		'shatree'     : '_sha_tree',
 		'update_tree' : '_update_sha_tree',
 		'pr' 	      : '_get_pr_info',
-		'sproc'	      : '_get_proc'
+		'sproc'	      : '_get_proc',
+		'kek'         : '_kek'
 	}
 	#Regex to search the string for #numbers or [numbers]
 	pr_regex = re.compile('#(\d+)|(\[\d+\])')
@@ -190,6 +191,9 @@ class ZBot(irc.IRCClient):
 			self.send_to_channel(channel, msg)
 		except KeyError:
 			pass
+	
+	def _kek(self, channel, user, msg_split):
+		self.send_to_channel(channel, "kek")
 		
 	
 class ZBotFactory(protocol.ClientFactory):
