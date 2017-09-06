@@ -9,6 +9,7 @@ class ZBot(irc.IRCClient):
 	#Dict of command -> function to call, ugly but effective, I guess
 	commands = {
 		'commit'      : '_search_for_commit',
+		'kek'	      : '_kek',
 		'sfile' 	  : '_search_for_file',
 		'shatree'     : '_sha_tree',
 		'update_tree' : '_update_sha_tree',
@@ -16,7 +17,7 @@ class ZBot(irc.IRCClient):
 		'sproc'	      : '_get_proc'
 	}
 	#Regex to search the string for #numbers or [numbers]
-	pr_regex = re.compile('#(\d+)|(\[\d+\])')
+	pr_regex = re.compile('#(\d+)|\[(\d+)\]')
 	#Regex to search for a file between []
 	file_regex = re.compile('\[(.*)\]')
 	#Regex to search for a commit prefixed with ^
@@ -67,7 +68,8 @@ class ZBot(irc.IRCClient):
 		else:
 			pr_match = re.search(self.pr_regex, message)
 			if pr_match:
-				self._get_pr_info(channel, user, pr_match.group(1), True)
+				group = pr_match.group(1) or pr_match.group(2)
+				self._get_pr_info(channel, user, group, True)
 			else:
 				file_match = re.search(self.file_regex, message)
 				if file_match:
@@ -190,6 +192,9 @@ class ZBot(irc.IRCClient):
 			self.send_to_channel(channel, msg)
 		except KeyError:
 			pass
+		
+	def _kek(self, channel, user, msg_split):
+		self.send_to_channel(channel, "kek")
 		
 	
 class ZBotFactory(protocol.ClientFactory):
