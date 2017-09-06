@@ -33,7 +33,7 @@ class APIRequests:
 		api_url = '{gau}/{o}/{r}/commits/{commit}'.format(gau = self.github_api_url, o = self.owner, r = self.repo, commit = sha)
 		r = requests.get(api_url)
 		if r.status_code == 200:	#will 404 if it doesn't exist
-			frontend_url = '{feu}/{o}/{r}/commit/{commit}'.format(gau = self.github_frontend_url, o = self.owner, r = self.repo, commit = sha)
+			frontend_url = '{feu}/{o}/{r}/commit/{commit}'.format(feu = self.github_frontend_url, o = self.owner, r = self.repo, commit = sha)
 			return frontend_url
 
 	"""
