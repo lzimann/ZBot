@@ -8,6 +8,7 @@ from zbot.github_events import EventHandlerFactory
 class ZBot(irc.IRCClient):
 	#Dict of command -> function to call, ugly but effective, I guess
 	commands = {
+		'commit'      : '_search_for_commit',
 		'sfile' 	  : '_search_for_file',
 		'shatree'     : '_sha_tree',
 		'update_tree' : '_update_sha_tree',
@@ -18,6 +19,8 @@ class ZBot(irc.IRCClient):
 	pr_regex = re.compile('#(\d+)|(\[\d+\])')
 	#Regex to search for a file between []
 	file_regex = re.compile('\[(.*)\]')
+	#Regex to search for a commit prefixed with ^
+	commit_regex = re.compile('\^([0-9a-fA-F]{5,40})')
 	def __init__(self, config, requests):
 		self.config = config
 		self.event_handler = EventHandlerFactory(config.get('webhook'))
@@ -69,6 +72,10 @@ class ZBot(irc.IRCClient):
 				file_match = re.search(self.file_regex, message)
 				if file_match:
 					self._search_for_file(channel, user, file_match.group(1), True)
+				else:
+					commit_match = re.search(self.commit_regex, message)
+					if commit_match:
+						self._search_for_commit(channel, user, commit_match.group(1))
 	def ctcpQuery(self, user, channel, messages):
 		super(ZBot, self).ctcpQuery(user, channel, messages)
 		print("CTCP: {}: {}: {}".format(channel, user, messages))
@@ -101,6 +108,13 @@ class ZBot(irc.IRCClient):
 			self.send_to_channel(channel, message)
 			
 	## Bot commands
+	"""
+		Searches the configured repo for a commit and sends the github link to it if it exists
+	"""
+	def _search_for_commit(self, channel, user, commit_sha):
+		path = self.requests.get_commit_url(commit_sha)
+		if path:
+			self.send_to_channel(channel, path)
 	"""
 		Searches the configured repo's tree for a file match, and sends the closest match
 	"""
