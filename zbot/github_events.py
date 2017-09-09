@@ -83,7 +83,7 @@ class EventHandler:
 		
 		#the message
 		msg = "Push: "
-		msg += "{} 6{}pushed {} commit{} ".format(sender, '4force-' if self.payload.get('forced') else '', size, 's' if size == 1 else '')
+		msg += "{} 6{}pushed {} commit{} ".format(sender, '4force-' if self.payload.get('forced') else '', size, '' if size == 1 else 's')
 		msg += "to {}. ".format(branch)
 		msg += diff
 		return msg
