@@ -74,7 +74,7 @@ class APIRequests:
 			path_match = self.file_pattern.search(path)
 			if path_match:
 				current_path = path_match.group(1)
-			if fuzz.token_sort_ratio(file_to_search, current_path) >= 60:
+			if fuzz.token_sort_ratio(file_to_search, current_path) >= 75:
 				matching_paths.append(path)
 		
 		result = process.extractOne(file_string, matching_paths, scorer = fuzz.token_set_ratio)
