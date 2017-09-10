@@ -77,7 +77,6 @@ class APIRequests:
 			if fuzz.token_sort_ratio(file_to_search, current_path) >= 60:
 				matching_paths.append(path)
 		
-		
 		result = process.extractOne(file_string, matching_paths, scorer = fuzz.token_set_ratio)
 		if result:
 			return "https://github.com/{own}/{repo}/blob/master/{p}{l}".format(own = self.owner, repo = self.repo, p = result[0], l = line if line else '')
