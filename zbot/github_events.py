@@ -41,7 +41,7 @@ class EventHandler:
 			message = self._get_repo_name()
 			message += getattr(self, event)()
 			return {'channels' : self.this_event_dict.get('channels'), 'message' : message}
-		except:
+		except KeyError:
 			print("Invalid or not supported hook event:", self.event_type)
 			return {'message' : None}
 

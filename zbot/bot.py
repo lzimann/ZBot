@@ -19,7 +19,7 @@ class ZBot(irc.IRCClient):
 	#Regex to search the string for #numbers or [numbers]
 	pr_regex = re.compile('#(\d+)|\[(\d+)\]')
 	#Regex to search for a file between []
-	file_regex = re.compile('\[(.*)\]')
+	file_regex = re.compile('\[(.*\..*)\]')
 	#Regex to search for a commit prefixed with ^
 	commit_regex = re.compile('\^([0-9a-fA-F]{5,40})')
 	def __init__(self, config, requests):
