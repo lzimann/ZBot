@@ -17,7 +17,7 @@ class ZBot(irc.IRCClient):
 		'sproc'	      : '_get_proc'
 	}
 	#Regex to search the string for #numbers or [numbers]. At least 5 digits are necessary for # and at least 4 are necessary for []
-	pr_regex = re.compile('#(\d+){5}|\[(\d+)\]{4}')
+	pr_regex = re.compile('#(\d{5,})|\[(\d{4,})\]')
 	#Regex to search for a file between []
 	file_regex = re.compile('\[(.*\..*)\]')
 	#Regex to search for a commit prefixed with ^
