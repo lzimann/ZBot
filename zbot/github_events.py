@@ -73,13 +73,15 @@ class EventHandler:
 		sender = self._get_sender()
 		branch = self.payload.get('ref').replace('refs/heads/', '')
 		diff = self.payload.get('compare')
+		size = len(self.payload.get('commits'))
+		if not size:
+			return None
 		if self.payload.get('deleted'):
-			return "{} 4deleted {}. {}".format(sender, branch, diff)
+			return "{} 4deleted {}.".format(sender, branch)
 		elif self.payload.get('created'):
 			return "{} 3created {}. {}".format(sender, branch, diff)
 		
 		
-		size = len(self.payload.get('commits'))
 		
 		#the message
 		msg = "Push: "
