@@ -38,8 +38,10 @@ class EventHandler:
 				print("Error: {} is not a valid event".format(self.event_type))
 				raise KeyError
 			event = self.events_dict[self.event_type]
-			message = self._get_repo_name()
-			message += getattr(self, event)()
+			message = None
+			event_msg = getattr(self, event)()
+			if event_msg:
+				message = self._get_repo_name() + event_msg
 			return {'channels' : self.this_event_dict.get('channels'), 'message' : message}
 		except KeyError:
 			print("Invalid or not supported hook event:", self.event_type)
