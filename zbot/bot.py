@@ -168,7 +168,7 @@ class ZBot(irc.IRCClient):
 		
 		# If the proc/var has a parent type
 		parent_type = None
-		if len(msg_split) >= 3:
+		if len(msg_split) > 3:
 			parent_type = msg_split[3]
 		
 		param = {
@@ -179,7 +179,7 @@ class ZBot(irc.IRCClient):
 		}
 		if parent_type:
 			param["type"] = parent_type
-		
+			
 		payload = requests.get("https://tgstation13.org/findshit.php", params = param).json()
 		
 		#Grab the first result
