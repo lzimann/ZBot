@@ -1,3 +1,4 @@
 twisted
 fuzzywuzzy[speedup]
 requests
+numpy
