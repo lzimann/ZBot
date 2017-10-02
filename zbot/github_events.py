@@ -76,13 +76,14 @@ class EventHandler:
 		branch = self.payload.get('ref').replace('refs/heads/', '')
 		diff = self.payload.get('compare')
 		size = len(self.payload.get('commits'))
-		if not size:
-			return None
+
 		if self.payload.get('deleted'):
 			return "{} 4deleted {}.".format(sender, branch)
 		elif self.payload.get('created'):
 			return "{} 3created {}. {}".format(sender, branch, diff)
-		
+	
+		if not size:
+			return None
 		
 		
 		#the message
