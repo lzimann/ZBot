@@ -21,7 +21,7 @@ class ZBot(irc.IRCClient):
 	#Regex to search for a file between []
 	file_regex = re.compile('\[(.*\..*)\]')
 	#Regex to search for a commit prefixed with ^
-	commit_regex = re.compile('\^([0-9a-fA-F]{5,40})')
+	commit_regex = re.compile('\^([0-9a-fA-F~]{5,40})')
 	def __init__(self, config, requests):
 		self.config = config
 		self.event_handler = EventHandlerFactory(config.get('webhook'))
