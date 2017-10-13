@@ -19,7 +19,7 @@ class ZBot(irc.IRCClient):
 	#Regex to search the string for #numbers or [numbers]. At least 5 digits are necessary for # and at least 4 are necessary for []
 	pr_regex = re.compile('#(\d{5,})|\[(\d{4,})\]')
 	#Regex to search for a file between []
-	file_regex = re.compile('\[(.*\..*)\]')
+	file_regex = re.compile('\[(.*\.[^#\s]*)#?(\d+)?\]')
 	#Regex to search for a commit prefixed with ^
 	commit_regex = re.compile('\^([0-9a-fA-F~]{5,40})')
 	def __init__(self, config, requests):
@@ -73,7 +73,7 @@ class ZBot(irc.IRCClient):
 			else:
 				file_match = re.search(self.file_regex, message)
 				if file_match:
-					self._search_for_file(channel, user, file_match.group(1), True)
+					self._search_for_file(channel, user, file_match, True)
 				else:
 					commit_match = re.search(self.commit_regex, message)
 					if commit_match:
@@ -123,7 +123,9 @@ class ZBot(irc.IRCClient):
 	def _search_for_file(self, channel, user, msg_split, regex_used = False):
 		line = None
 		if regex_used:
-			file_string = msg_split
+			file_string = msg_split.group(1)
+			if msg_split.group(2):
+				line = msg_split.group(2)
 		elif len(msg_split) >= 3 and msg_split[2].startswith('#L'):
 			file_string = msg_split[1]
 			line = msg_split[2]
