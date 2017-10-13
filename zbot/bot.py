@@ -125,7 +125,7 @@ class ZBot(irc.IRCClient):
 		if regex_used:
 			file_string = msg_split.group(1)
 			if msg_split.group(2):
-				line = msg_split.group(2)
+				line = "#L" + msg_split.group(2)
 		elif len(msg_split) >= 3 and msg_split[2].startswith('#L'):
 			file_string = msg_split[1]
 			line = msg_split[2]
