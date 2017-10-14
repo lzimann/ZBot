@@ -9,12 +9,13 @@ class ZBot(irc.IRCClient):
 	#Dict of command -> function to call, ugly but effective, I guess
 	commands = {
 		'commit'      : '_search_for_commit',
+		'help'	      : '_help',
 		'kek'	      : '_kek',
+		'pr' 	      : '_get_pr_info',
+		'sdef'	      : '_get_proc',
 		'sfile' 	  : '_search_for_file',
 		'shatree'     : '_sha_tree',
-		'update_tree' : '_update_sha_tree',
-		'pr' 	      : '_get_pr_info',
-		'sdef'	      : '_get_proc'
+		'update_tree' : '_update_sha_tree'
 	}
 	#Regex to search the string for #numbers or [numbers]. At least 5 digits are necessary for # and at least 4 are necessary for []
 	pr_regex = re.compile('#(\d{5,})|\[(\d{4,})\]')
@@ -88,39 +89,33 @@ class ZBot(irc.IRCClient):
 		if msg is not None:
 			self.send_to_channels(event_dict.get('channels'), msg)
 	
-	"""
-		Send to a single channel
-	"""
+	#Send to a single channel
 	def send_to_channel(self, channel, message):
 		print("{s} - {c}: {m}".format(s = self.server_name, c = channel, m = message))
 		self.msg(channel, message)
 	
-	"""
-		Sends to a list of channels
-	"""
+	#Sends to a list of channels
 	def send_to_channels(self, channels, message):
 		for channel in channels:
 			self.send_to_channel(channel, message)
-	
-	"""
-		Sends to all connected channels
-	"""
+
+	#Sends to all connected channels.
 	def send_to_all_channels(self, message):
 		for channel in self.channels:
 			self.send_to_channel(channel, message)
 			
 	## Bot commands
-	"""
-		Searches the configured repo for a commit and sends the github link to it if it exists
-	"""
+
+	#Searches the configured repo for a commit and sends the github link to it if it exists.
 	def _search_for_commit(self, channel, user, commit_sha):
+		"""Usage: !commit <commit hash>"""
 		path = self.requests.get_commit_url(commit_sha)
 		if path:
 			self.send_to_channel(channel, path)
-	"""
-		Searches the configured repo's tree for a file match, and sends the closest match
-	"""
+	
+	#Searches the configured repo's tree for a file match, and sends the closest match.
 	def _search_for_file(self, channel, user, msg_split, regex_used = False):
+		"""Usage: !sfile <file name> <#L + line number(if any)>"""
 		line = None
 		if regex_used:
 			file_string = msg_split.group(1)
@@ -132,16 +127,13 @@ class ZBot(irc.IRCClient):
 		path = self.requests.get_file_url(file_string, line)
 		if path:
 			self.send_to_channel(channel, path)
-	"""
-		Returns the current tree's SHA
-	"""
+	
 	def _sha_tree(self, channel, user, msg_split):
+		"""Returns the current tree's SHA."""
 		self.send_to_channel(channel, "SHA: {}".format(self.requests.get_tree_sha()))
 	
-	"""
-		Updates the current tree with configured repo's latest
-	"""
 	def _update_sha_tree(self, channel, user, msg_split):
+		"""Updates the current tree with configured repo's latest."""
 		force = False
 		if len(msg_split) >= 2 and msg_split[1] == 'force': #Forces the tree to reload regardless if it's the same sha
 			force = True
@@ -149,10 +141,10 @@ class ZBot(irc.IRCClient):
 		self.requests.update_tree(force)
 		self.send_to_channel(channel, "Tree updated.")
 		self.send_to_channel(channel, "Old: {} New: {}".format(old, self.requests.get_tree_sha()))
-	"""
-		Gets the info of a certain pull request/issue by the number from the configured repository
-	"""
+	
+	#Gets the info of a certain pull request/issue by the number from the configured repository
 	def _get_pr_info(self, channel, user, msg_split, regex_used = False):
+		"""Usage: !pr <number>"""
 		if regex_used:
 			number = msg_split
 		else:
@@ -163,6 +155,7 @@ class ZBot(irc.IRCClient):
 			self.send_to_channel(channel, msg)
 	
 	def _get_proc(self, channel, user, msg_split):
+		"""Usage: !sdef <proc/var> <name> <parent type(if any)>"""
 		# If it is a var or proc
 		search_type = msg_split[1]
 		# What is the proc/var you are trying to find
@@ -196,7 +189,24 @@ class ZBot(irc.IRCClient):
 			pass
 		
 	def _kek(self, channel, user, msg_split):
+		"""kek"""
 		self.send_to_channel(channel, "kek")
+	
+	def _help(self, channel, user, msg_split):
+		"""Usage: !help <command(or blank to display all available commands)>"""
+		if len(msg_split) == 1:
+			final_msg = "Available commands: "
+			len_c = len(self.commands)
+			count = 0
+			for command in self.commands:
+				if count == len_c - 1:
+					final_msg += command
+				else:
+					final_msg += command + ", "
+				count += 1
+		else:
+			final_msg = getattr(self, self.commands[msg_split[1]]).__doc__
+		self.send_to_channel(channel, final_msg)
 		
 	
 class ZBotFactory(protocol.ClientFactory):
