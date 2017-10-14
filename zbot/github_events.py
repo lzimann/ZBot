@@ -58,6 +58,7 @@ class EventHandler:
 			pr_action = 'merged'
 		pr_title = pr_obj.get('title')
 		pr_number = pr_obj.get('number')
+		pr_author = pr_obj.get('user').get('login')
 		
 		to_branch = pr_obj.get('base').get('ref')
 		from_branch = pr_obj.get('head').get('ref')
@@ -66,7 +67,7 @@ class EventHandler:
 		msg = "Pull Request "
 		msg += "{action_color}{action} ".format(action_color = pr_action_color, action = pr_action)
 		msg += "by {}: ".format(self._get_sender())
-		msg += "{title} (#{number}) ".format(title = pr_title, number = pr_number)
+		msg += "{title} (#{number}) by {author} ".format(title = pr_title, number = pr_number, author = pr_author)
 		msg += "({}...{}) ".format(to_branch, from_branch)
 		msg += pr_obj.get('html_url')
 		return msg
