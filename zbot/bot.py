@@ -9,12 +9,12 @@ class ZBot(irc.IRCClient):
 	#Dict of command -> function to call, ugly but effective, I guess
 	commands = {
 		'commit'      : '_search_for_commit',
-		'help'	      : '_help',
 		'kek'	      : '_kek',
 		'pr' 	      : '_get_pr_info',
 		'sdef'	      : '_get_proc',
-		'sfile' 	  : '_search_for_file',
+		'sfile'	      : '_search_for_file',
 		'shatree'     : '_sha_tree',
+		'shelp'	      : '_help',
 		'update_tree' : '_update_sha_tree'
 	}
 	#Regex to search the string for #numbers or [numbers]. At least 5 digits are necessary for # and at least 4 are necessary for []
