@@ -19,9 +19,6 @@ class EventHandler:
 	def _get_repo_name(self):
 		return "6[{repo_name}] ".format(repo_name = self.payload.get('repository').get('name'))
 	
-	def _get_sender(self):
-		return self.payload.get('sender').get('login')
-	
 	#Returns the action color for issues/prs.
 	def _get_action_color(self, action, merging = False):
 		if action == 'opened' or action == 'reopened':
@@ -58,9 +55,11 @@ class EventHandler:
 			pr_action = 'merged'
 		pr_title = pr_obj.get('title')
 		pr_number = pr_obj.get('number')
-		pr_author = " by " + pr_obj.get('user').get('login')
-		if pr_author == self._get_sender():
+		pr_author = pr_obj.get('user').get('login')
+		if pr_author == self.payload.get('sender').get('login'):
 			pr_author = ""
+		else:
+			pr_author = " by {}".format(pr_author)
 		
 		to_branch = pr_obj.get('base').get('ref')
 		from_branch = pr_obj.get('head').get('ref')
@@ -68,14 +67,14 @@ class EventHandler:
 		#the message itself
 		msg = "Pull Request "
 		msg += "{action_color}{action} ".format(action_color = pr_action_color, action = pr_action)
-		msg += "by {}: ".format(self._get_sender())
+		msg += "by {}: ".format(self.payload.get('sender').get('login'))
 		msg += "{title} (#{number}){author} ".format(title = pr_title, number = pr_number, author = pr_author)
 		msg += "({}...{}) ".format(to_branch, from_branch)
 		msg += pr_obj.get('html_url')
 		return msg
 		
 	def _push_event(self):
-		sender = self._get_sender()
+		sender = self.payload.get('sender').get('login')
 		branch = self.payload.get('ref').replace('refs/heads/', '')
 		diff = self.payload.get('compare')
 		size = len(self.payload.get('commits'))
@@ -108,7 +107,7 @@ class EventHandler:
 		#the message itself
 		msg = "Issue "
 		msg += "{action_color}{action} ".format(action_color = issue_action_color, action = issue_action)
-		msg += "by {}: ".format(self._get_sender())
+		msg += "by {}: ".format(self.payload.get('sender').get('login'))
 		msg += "{title} (#{number}). ".format(title = issue_title, number = issue_number)
 		msg += issue_obj.get('html_url')
 		return msg
