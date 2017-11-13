@@ -82,4 +82,7 @@ class APIRequests:
 			return "https://github.com/{own}/{repo}/blob/master/{p}{l}".format(own = self.owner, repo = self.repo, p = result[0], l = line if line else '')
 		return None
 	def get_pr_info(self, pr_number):
-		return requests.get("{g}/{o}/{r}/issues/{n}".format(g = self.github_api_url, o = self.owner, r = self.repo, n = pr_number)).json()
+		req = requests.get("{g}/{o}/{r}/issues/{n}".format(g = self.github_api_url, o = self.owner, r = self.repo, n = pr_number))
+		if req.status_code == 200:
+			return req.json()
+		return None
