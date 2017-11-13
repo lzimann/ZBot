@@ -67,18 +67,20 @@ class ZBot(irc.IRCClient):
 			except IndexError:
 				pass
 		else:
-			pr_match = re.search(self.pr_regex, message)
-			if pr_match:
-				group = pr_match.group(1) or pr_match.group(2)
-				self._get_pr_info(channel, user, group, True)
-			else:
-				file_match = re.search(self.file_regex, message)
-				if file_match:
-					self._search_for_file(channel, user, file_match, True)
+			msg_split = message.split()
+			for msg in msg_split:
+				pr_match = re.search(self.pr_regex, msg)
+				if pr_match:
+					group = pr_match.group(1) or pr_match.group(2)
+					self._get_pr_info(channel, user, group, True)
 				else:
-					commit_match = re.search(self.commit_regex, message)
-					if commit_match:
-						self._search_for_commit(channel, user, commit_match.group(1))
+					file_match = re.search(self.file_regex, msg)
+					if file_match:
+						self._search_for_file(channel, user, file_match, True)
+					else:
+						commit_match = re.search(self.commit_regex, msg)
+						if commit_match:
+							self._search_for_commit(channel, user, commit_match.group(1))
 	def ctcpQuery(self, user, channel, messages):
 		super(ZBot, self).ctcpQuery(user, channel, messages)
 		print("CTCP: {}: {}: {}".format(channel, user, messages))
@@ -150,7 +152,7 @@ class ZBot(irc.IRCClient):
 		else:
 			number = msg_split[1]
 		pr_info = self.requests.get_pr_info(number)
-		if(pr_info):
+		if pr_info:
 			msg = "\"{t}\" (#{n}) by {u} - {l}".format(t = pr_info.get('title'), n = pr_info.get('number'), u = pr_info.get('user').get('login'), l = pr_info.get('html_url'))
 			self.send_to_channel(channel, msg)
 	
