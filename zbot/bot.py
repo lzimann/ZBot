@@ -23,6 +23,8 @@ class ZBot(irc.IRCClient):
     file_regex = re.compile('\[(.*\.[^#\s]*)#?(\d+)?\]')
     #Regex to search for a commit prefixed with ^
     commit_regex = re.compile('\^([0-9a-fA-F~]{5,40})')
+    #Max iterations for privmsg checks
+    privmsg_max_iterations = 3
     def __init__(self, config, requests):
         self.config = config
         self.event_handler = EventHandlerFactory(config.get('webhook'))
@@ -68,7 +70,10 @@ class ZBot(irc.IRCClient):
                 pass
         else:
             msg_split = message.split()
+            current_iterations = 0
             for msg in msg_split:
+                if current_iterations > self.privmsg_max_iterations:
+                    break
                 pr_match = re.search(self.pr_regex, msg)
                 if pr_match:
                     group = pr_match.group(1) or pr_match.group(2)
@@ -81,6 +86,7 @@ class ZBot(irc.IRCClient):
                         commit_match = re.search(self.commit_regex, msg)
                         if commit_match:
                             self._search_for_commit(channel, user, commit_match.group(1))
+                current_iterations += 1
     def ctcpQuery(self, user, channel, messages):
         super(ZBot, self).ctcpQuery(user, channel, messages)
         print("CTCP: {}: {}: {}".format(channel, user, messages))
