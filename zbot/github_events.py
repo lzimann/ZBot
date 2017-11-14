@@ -76,8 +76,7 @@ class EventHandler:
     def _push_event(self):
         sender = self.payload.get('sender').get('login')
         branch = self.payload.get('ref').replace('refs/heads/', '')
-        if self.this_event_dict.get('ignore_non_master_pushes') and branch != 'master':
-            return None
+        
         diff = self.payload.get('compare')
         size = len(self.payload.get('commits'))
 
@@ -85,7 +84,8 @@ class EventHandler:
             return "{} 4deleted {}.".format(sender, branch)
         elif self.payload.get('created'):
             return "{} 3created {}. {}".format(sender, branch, diff)
-
+        if self.this_event_dict.get('ignore_non_master_pushes') and branch != 'master':
+            return None
         if not size:
             return None
 
