@@ -79,7 +79,9 @@ class EventHandler:
         diff = self.payload.get('compare')
         size = len(self.payload.get('commits'))
 
-        if self.payload.get('deleted'):
+        if branch is not 'master':
+            return None
+        elif self.payload.get('deleted'):
             return "{} 4deleted {}.".format(sender, branch)
         elif self.payload.get('created'):
             return "{} 3created {}. {}".format(sender, branch, diff)
