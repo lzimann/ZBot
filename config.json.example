@@ -50,6 +50,7 @@
 
                 },
                 "push" : {
+                    "ignore_non_master_pushes": false,
                     "channels": [
                         "#coderbus"
                     ]
