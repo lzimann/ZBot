@@ -78,15 +78,18 @@ class ZBot(irc.IRCClient):
                 if pr_match:
                     group = pr_match.group(1) or pr_match.group(2)
                     self._get_pr_info(channel, user, group, True)
+                    current_iterations += 1
                 else:
                     file_match = re.search(self.file_regex, msg)
                     if file_match:
                         self._search_for_file(channel, user, file_match, True)
+                        current_iterations += 1
                     else:
                         commit_match = re.search(self.commit_regex, msg)
                         if commit_match:
                             self._search_for_commit(channel, user, commit_match.group(1))
-                current_iterations += 1
+                            current_iterations += 1
+                
     def ctcpQuery(self, user, channel, messages):
         super(ZBot, self).ctcpQuery(user, channel, messages)
         print("CTCP: {}: {}: {}".format(channel, user, messages))
