@@ -76,6 +76,8 @@ class EventHandler:
     def _push_event(self):
         sender = self.payload.get('sender').get('login')
         branch = self.payload.get('ref').replace('refs/heads/', '')
+        if self.this_event_dict.get('ignore_non_master_pushes') and branch != 'master':
+            return None
         diff = self.payload.get('compare')
         size = len(self.payload.get('commits'))
 
@@ -86,7 +88,6 @@ class EventHandler:
 
         if not size:
             return None
-
 
         #the message
         msg = "Push: "
@@ -120,5 +121,3 @@ class EventHandlerFactory:
         if event_type not in self.events_dict:
             return {'message' : None}
         return EventHandler(event_type, payload, self.events_dict[event_type]).get_message()
-
-
