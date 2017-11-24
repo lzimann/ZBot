@@ -76,6 +76,8 @@ class EventHandler:
     def _push_event(self):
         sender = self.payload.get('sender').get('login')
         branch = self.payload.get('ref').replace('refs/heads/', '')
+        if branch in self.this_event_dict.get('branches_to_ignore'):
+            return None
         
         diff = self.payload.get('compare')
         size = len(self.payload.get('commits'))

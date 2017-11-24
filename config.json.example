@@ -47,10 +47,10 @@
                     "channels": [
                         "#coderbus"
                     ]
-
                 },
                 "push" : {
                     "ignore_non_master_pushes": false,
+                    "branches_to_ignore": [],
                     "channels": [
                         "#coderbus"
                     ]
