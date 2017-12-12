@@ -186,7 +186,7 @@ class ZBot(irc.IRCClient):
         if parent_type:
             param["type"] = parent_type
 
-        payload = requests.get("https://lzimann.org/findshit/index.php", params = param).json()
+        payload = requests.get("https://tgstation13.org/findshit.php", params = param).json()
 
         #Grab the first result
         try:
