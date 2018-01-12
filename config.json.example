@@ -19,6 +19,8 @@
         "channels": [
             "#coderbus",
             "#tgstation13"
+        ],
+        "ignore_list": [
         ]
     }
     ],

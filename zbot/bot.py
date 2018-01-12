@@ -41,6 +41,7 @@ class ZBot(irc.IRCClient):
         self.realname = info.get('realname', 'ZBot')
         self.username = info.get('username', 'ZBot')
         self.channels = self.config.get('channels')
+        self.ignore_list = self.config.get('ignore_list')
 
     def signedOn(self):
         print("Sucessfully connected to", self.server_name)
@@ -61,6 +62,8 @@ class ZBot(irc.IRCClient):
 
     def privmsg(self, user, channel, message):
         print("{}: {}: {}".format(channel, user, message))
+        if user.lower() in self.ignore_list:
+            return
         if(message.startswith("!")):
             msg_split = message[1:].split()
             try:
