@@ -62,7 +62,7 @@ class ZBot(irc.IRCClient):
 
     def privmsg(self, user, channel, message):
         print("{}: {}: {}".format(channel, user, message))
-        if user.lower() in self.ignore_list:
+        if user.lower().split('!')[0] in self.ignore_list:
             return
         if(message.startswith("!")):
             msg_split = message[1:].split()
