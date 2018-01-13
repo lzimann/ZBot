@@ -102,3 +102,6 @@ ENV/
 
 # JSON config
 *.json
+
+# XML files
+*.xml

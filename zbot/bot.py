@@ -2,6 +2,7 @@ import re
 import requests
 from twisted.words.protocols import irc
 from twisted.internet import protocol
+from zbot.obj_tree_searcher import TreeSearcher
 from zbot.github_events import EventHandler
 from zbot.github_events import EventHandlerFactory
 
@@ -11,7 +12,7 @@ class ZBot(irc.IRCClient):
         'commit'      : '_search_for_commit',
         'kek'	      : '_kek',
         'pr' 	      : '_get_pr_info',
-        'sdef'	      : '_get_proc',
+        'sdef'	      : '_get_definition',
         'sfile'	      : '_search_for_file',
         'shatree'     : '_sha_tree',
         'shelp'	      : '_help',
@@ -25,10 +26,10 @@ class ZBot(irc.IRCClient):
     commit_regex = re.compile('\^([0-9a-fA-F~]{5,40})')
     #Max iterations for privmsg checks
     privmsg_max_iterations = 3
-    def __init__(self, config, requests):
+    def __init__(self, config, req_api):
         self.config = config
         self.event_handler = EventHandlerFactory(config.get('webhook'))
-        self.requests = requests
+        self.requests = req_api
         self._setup()
         self.server_name = self.config.get('server').get('name').capitalize()
         self.connected_channels = []
@@ -58,7 +59,7 @@ class ZBot(irc.IRCClient):
 
     def joined(self, channel):
         print("Sucessfully joined", channel)
-        self.connected_channels += channel
+        self.connected_channels.append(channel)
 
     def privmsg(self, user, channel, message):
         print("{}: {}: {}".format(channel, user, message))
@@ -103,18 +104,18 @@ class ZBot(irc.IRCClient):
         if msg is not None:
             self.send_to_channels(event_dict.get('channels'), msg)
 
-    #Send to a single channel
     def send_to_channel(self, channel, message):
+        """Send to a single channel"""
         print("{s} - {c}: {m}".format(s = self.server_name, c = channel, m = message))
         self.msg(channel, message)
 
-    #Sends to a list of channels
     def send_to_channels(self, channels, message):
+        """Sends to a list of channels"""
         for channel in channels:
             self.send_to_channel(channel, message)
 
-    #Sends to all connected channels.
     def send_to_all_channels(self, message):
+        """Sends to all connected channels."""
         for channel in self.channels:
             self.send_to_channel(channel, message)
 
@@ -168,7 +169,7 @@ class ZBot(irc.IRCClient):
             msg = "\"{t}\" (#{n}) by {u} - {l}".format(t = pr_info.get('title'), n = pr_info.get('number'), u = pr_info.get('user').get('login'), l = pr_info.get('html_url'))
             self.send_to_channel(channel, msg)
 
-    def _get_proc(self, channel, user, msg_split):
+    def _get_definition(self, channel, user, msg_split):
         """Usage: !sdef <proc/var> <name> <parent type(if any)>"""
         # If it is a var or proc
         search_type = msg_split[1]
@@ -176,31 +177,19 @@ class ZBot(irc.IRCClient):
         thing_to_search = msg_split[2]
 
         # If the proc/var has a parent type
-        parent_type = None
-        if len(msg_split) > 3:
-            parent_type = msg_split[3]
-
-        param = {
-        "searchtype" : search_type,
-        "q" : thing_to_search,
-        "json" : "1",
-        "search" : "go"
-        }
-        if parent_type:
-            param["type"] = parent_type
-
-        payload = requests.get("https://tgstation13.org/findshit.php", params = param).json()
-
-        #Grab the first result
         try:
-            info_found = payload[0]
-            file = info_found.get('F')
-            file_path = file[0]
-            line = file[1]
-            msg = "https://github.com/tgstation/tgstation/blob/master/{FILE}#L{LINE}".format(FILE = file_path, LINE = line)
-            self.send_to_channel(channel, msg)
-        except KeyError:
-            pass
+            parent_type = msg_split[3]
+        except IndexError:
+            parent_type = None
+
+        which_file = TreeSearcher.find_definition(thing_to_search, search_type, parent_type)
+        if not which_file:
+            return None
+        which_file = which_file.replace('\\', '/').split(':')
+        owner = self.requests.owner
+        repo = self.requests.repo
+        msg = "https://github.com/{owner}/{repo}/blob/master/{file}#L{line}".format(owner=owner, repo=repo, file=which_file[0], line=which_file[1])
+        self.send_to_channel(channel, msg)
 
     def _kek(self, channel, user, msg_split):
         """kek"""

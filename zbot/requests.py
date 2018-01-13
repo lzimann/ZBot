@@ -40,7 +40,7 @@ class APIRequests:
         Returns a json tree of the default repo
     """
     def get_repo_tree(self, force = False):
-        path = os.path.abspath('tree.json')
+        path = os.path.abspath('repository_tree.json')
         tree = {}
         try:
             f = open(path, "r+")
@@ -52,6 +52,7 @@ class APIRequests:
             f.truncate()
             tree = requests.get(self.master_tree_url, params = {'recursive' : '1'}).json()
             json.dump(tree, f)
+        f.close()
         return tree
 
     """
@@ -81,6 +82,7 @@ class APIRequests:
         if result:
             return "https://github.com/{own}/{repo}/blob/master/{p}{l}".format(own = self.owner, repo = self.repo, p = result[0], l = line if line else '')
         return None
+
     def get_pr_info(self, pr_number):
         req = requests.get("{g}/{o}/{r}/issues/{n}".format(g = self.github_api_url, o = self.owner, r = self.repo, n = pr_number))
         if req.status_code == 200:
