@@ -42,8 +42,5 @@ class TreeSearcher:
             if txt == name:
                 return item.attrib['file']
 
-def main():
-    print(TreeSearcher.find_definition("Meme", "proc", '/mob/living'))
-
 if __name__ == '__main__':
-    main()
+    print(TreeSearcher.find_definition("Meme", "proc", '/mob/living'))
