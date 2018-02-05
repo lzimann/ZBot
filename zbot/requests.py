@@ -68,17 +68,23 @@ class APIRequests:
         matching_paths = []
         file_to_search = file_string
         user_match = self.file_pattern.search(file_string)
+        exact_match = None
         if user_match:
             file_to_search = user_match.group(1)
         for path in self.current_paths:
             current_path = path
+            if current_path == file_string:
+                print(current_path)
+                exact_match = current_path
             path_match = self.file_pattern.search(path)
             if path_match:
                 current_path = path_match.group(1)
             if fuzz.token_sort_ratio(file_to_search, current_path) >= 75:
                 matching_paths.append(path)
-
-        result = process.extractOne(file_string, matching_paths, scorer = fuzz.token_set_ratio)
+        if exact_match is not None:
+            result = [exact_match]
+        else:
+            result = process.extractOne(file_string, matching_paths, scorer = fuzz.token_set_ratio)
         if result:
             return "https://github.com/{own}/{repo}/blob/master/{p}{l}".format(own = self.owner, repo = self.repo, p = result[0], l = line if line else '')
         return None

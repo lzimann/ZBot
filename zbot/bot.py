@@ -1,4 +1,5 @@
 import re
+import functools
 import requests
 from twisted.words.protocols import irc
 from twisted.internet import protocol
@@ -79,19 +80,19 @@ class ZBot(irc.IRCClient):
                 if current_iterations > self.privmsg_max_iterations:
                     break
                 pr_match = re.search(self.pr_regex, msg)
-                if pr_match:
+                if pr_match is not None:
                     group = pr_match.group(1) or pr_match.group(2)
-                    self._get_pr_info(channel, user, group, True)
+                    self._get_pr_info(channel, user, group, regex_used=True)
                     current_iterations += 1
                 else:
                     file_match = re.search(self.file_regex, msg)
-                    if file_match:
-                        self._search_for_file(channel, user, file_match, True)
+                    if file_match is not None:
+                        self._search_for_file(channel, user, file_match, regex_used=True)
                         current_iterations += 1
                     else:
                         commit_match = re.search(self.commit_regex, msg)
-                        if commit_match:
-                            self._search_for_commit(channel, user, commit_match.group(1))
+                        if commit_match is not None:
+                            self._search_for_commit(channel, user, commit_match.group(1), regex_used=True)
                             current_iterations += 1
                 
     def ctcpQuery(self, user, channel, messages):
@@ -120,17 +121,32 @@ class ZBot(irc.IRCClient):
             self.send_to_channel(channel, message)
 
     ## Bot commands
+    def require_arg(func):
+        """The decorator allows commands that require arguments to display the help if no arg is passed"""
+        @functools.wraps(func)
+        def check_arg(self, *args, **kwargs):
+            if len(args) >= 2 and kwargs.get('regex_used') is None:
+                args[2].insert(0, "shelp")
+                return self._help(*args, **kwargs)
+            return func(self, *args, **kwargs)
+        return check_arg
 
     #Searches the configured repo for a commit and sends the github link to it if it exists.
-    def _search_for_commit(self, channel, user, commit_sha):
-        """Usage: !commit <commit hash>"""
+    @require_arg
+    def _search_for_commit(self, channel, user, msg_split, regex_used=False):
+        """Usage: <cmd> <commit hash>"""
+        if regex_used:
+            commit_sha = msg_split
+        else:
+            commit_sha = msg_split[1]
         path = self.requests.get_commit_url(commit_sha)
         if path:
             self.send_to_channel(channel, path)
 
     #Searches the configured repo's tree for a file match, and sends the closest match.
-    def _search_for_file(self, channel, user, msg_split, regex_used = False):
-        """Usage: !sfile <file name> <#L + line number(if any)>"""
+    @require_arg
+    def _search_for_file(self, channel, user, msg_split, regex_used=False):
+        """Usage: <cmd> <file name> <#L + line number(if any)>"""
         line = None
         if regex_used:
             file_string = msg_split.group(1)
@@ -158,8 +174,9 @@ class ZBot(irc.IRCClient):
         self.send_to_channel(channel, "Old: {} New: {}".format(old, self.requests.get_tree_sha()))
 
     #Gets the info of a certain pull request/issue by the number from the configured repository
-    def _get_pr_info(self, channel, user, msg_split, regex_used = False):
-        """Usage: !pr <number>"""
+    @require_arg
+    def _get_pr_info(self, channel, user, msg_split, regex_used=False):
+        """Usage: <cmd> <number>"""
         if regex_used:
             number = msg_split
         else:
@@ -169,8 +186,9 @@ class ZBot(irc.IRCClient):
             msg = "\"{t}\" (#{n}) by {u} - {l}".format(t = pr_info.get('title'), n = pr_info.get('number'), u = pr_info.get('user').get('login'), l = pr_info.get('html_url'))
             self.send_to_channel(channel, msg)
 
+    @require_arg
     def _get_definition(self, channel, user, msg_split):
-        """Usage: !sdef <proc/var> <name> <parent type(if any)>"""
+        """Usage: <cmd> <proc/var> <name> <parent type(if any)>"""
         # If it is a var or proc
         search_type = msg_split[1]
         # What is the proc/var you are trying to find
@@ -196,7 +214,7 @@ class ZBot(irc.IRCClient):
         self.send_to_channel(channel, "kek")
 
     def _help(self, channel, user, msg_split):
-        """Usage: !help <command(or blank to display all available commands)>"""
+        """Usage: <cmd> <command(or none to display all available commands)>"""
         if len(msg_split) == 1:
             final_msg = "Available commands: "
             len_c = len(self.commands)
@@ -208,9 +226,9 @@ class ZBot(irc.IRCClient):
                     final_msg += command + ", "
                 count += 1
         else:
-            final_msg = getattr(self, self.commands[msg_split[1]]).__doc__
+            command = msg_split[1]
+            final_msg = getattr(self, self.commands[command]).__doc__.replace("<cmd>", "!{}".format(command))
         self.send_to_channel(channel, final_msg)
-
 
 class ZBotFactory(protocol.ClientFactory):
     def __init__(self, config, requests):
