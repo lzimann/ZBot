@@ -125,7 +125,7 @@ class ZBot(irc.IRCClient):
         """The decorator allows commands that require arguments to display the help if no arg is passed"""
         @functools.wraps(func)
         def check_arg(self, *args, **kwargs):
-            if len(args) >= 2 and kwargs.get('regex_used') is None:
+            if len(args[2]) == 1 and kwargs.get('regex_used') is None:
                 args[2].insert(0, "shelp")
                 return self._help(*args, **kwargs)
             return func(self, *args, **kwargs)
