@@ -182,7 +182,7 @@ class ZBot(irc.IRCClient):
         else:
             number = msg_split[1]
         pr_info = self.requests.get_pr_info(number)
-        if pr_info:
+        if pr_info is not None:
             msg = "\"{t}\" (#{n}) by {u} - {l}".format(t = pr_info.get('title'), n = pr_info.get('number'), u = pr_info.get('user').get('login'), l = pr_info.get('html_url'))
             self.send_to_channel(channel, msg)
 

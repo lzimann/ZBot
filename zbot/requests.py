@@ -2,14 +2,21 @@ import requests
 import json
 import os
 import re
+from threading import Timer
 from fuzzywuzzy import process, fuzz
 """
     This will make requests using the GitHub api.
 """
+
+#How many seconds between requesting info on the same PR
+PR_TIMING = 60.0
+
 class APIRequests:
     github_api_url = 'https://api.github.com/repos'
     github_frontend_url = 'https://github.com'
     file_pattern = re.compile('.*\/(.*)')
+    #Recent pull requests
+    recent_prs = []
     def __init__(self, config):
         self.config = config
         self.repo = self.config.get('name')
@@ -90,7 +97,11 @@ class APIRequests:
         return None
 
     def get_pr_info(self, pr_number):
+        if pr_number in self.recent_prs:
+            return None
         req = requests.get("{g}/{o}/{r}/issues/{n}".format(g = self.github_api_url, o = self.owner, r = self.repo, n = pr_number))
         if req.status_code == 200:
+            self.recent_prs.append(pr_number)
+            Timer(PR_TIMING, lambda n: self.recent_prs.remove(n), [pr_number]).start()
             return req.json()
         return None
