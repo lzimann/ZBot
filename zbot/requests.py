@@ -16,7 +16,7 @@ class APIRequests:
     github_frontend_url = 'https://github.com'
     file_pattern = re.compile('.*\/(.*)')
     #Recent pull requests
-    recent_prs = []
+    recent_prs = {}
     def __init__(self, config):
         self.config = config
         self.repo = self.config.get('name')
@@ -96,12 +96,15 @@ class APIRequests:
             return "https://github.com/{own}/{repo}/blob/master/{p}{l}".format(own = self.owner, repo = self.repo, p = result[0], l = line if line else '')
         return None
 
-    def get_pr_info(self, pr_number):
-        if pr_number in self.recent_prs:
-            return None
+    def get_pr_info(self, pr_number, channel):
+        try:
+            if pr_number in self.recent_prs[channel]:
+                return None
+        except KeyError:
+            self.recent_prs[channel] = []
         req = requests.get("{g}/{o}/{r}/issues/{n}".format(g = self.github_api_url, o = self.owner, r = self.repo, n = pr_number))
         if req.status_code == 200:
-            self.recent_prs.append(pr_number)
-            Timer(PR_TIMING, lambda n: self.recent_prs.remove(n), [pr_number]).start()
+            self.recent_prs[channel].append(pr_number)
+            Timer(PR_TIMING, lambda n: self.recent_prs[channel].remove(n), [pr_number]).start()
             return req.json()
         return None
